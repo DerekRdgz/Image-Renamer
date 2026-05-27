@@ -43,6 +43,52 @@
   overflow: hidden;
 }
 
+/* Split view layout — sits below Toolbar, fills remaining height */
+.splitBody {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* Left pane — width driven by inline style (splitPos %) */
+.gridPane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 200px;
+}
+
+/* Draggable divider */
+.splitter {
+  flex: 0 0 5px;
+  background: var(--border);
+  cursor: col-resize;
+  transition: background var(--transition-fast);
+  position: relative;
+  z-index: 10;
+}
+
+/* Wider invisible hit area so it's easy to grab */
+.splitter::before {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
+}
+
+.splitter:hover {
+  background: var(--accent);
+}
+
+/* Right pane — fills remaining width */
+.previewPane {
+  flex: 1;
+  min-width: 200px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .loadingOverlay {
   position: fixed;
   inset: 0;

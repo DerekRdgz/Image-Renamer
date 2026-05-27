@@ -14,6 +14,8 @@ export default function Toolbar({
   onViewModeChange,
   thumbSize,
   onThumbSizeChange,
+  splitView,
+  onSplitViewChange,
 }) {
   return (
     <div className={styles.toolbar}>
@@ -36,6 +38,18 @@ export default function Toolbar({
         </div>
 
         <div className={styles.viewControls}>
+          {/* Split view toggle */}
+          <button
+            className={`${styles.splitBtn} ${splitView ? styles.splitActive : ''}`}
+            onClick={() => onSplitViewChange(!splitView)}
+            title={splitView ? 'Ocultar previsualización' : 'Pantalla dividida — previsualizar imágenes'}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+              <line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" strokeWidth="1.3"/>
+            </svg>
+          </button>
+
           <div className={styles.viewToggle}>
             <button
               className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewActive : ''}`}

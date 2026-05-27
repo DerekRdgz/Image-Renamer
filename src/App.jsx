@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { useImageStore } from './hooks/useImageStore';
 import DropZone from './components/DropZone';
 import Toolbar from './components/Toolbar';
 import ImageGrid from './components/ImageGrid';
+import PreviewPanel from './components/PreviewPanel';
 import { buildNewName } from './utils/imageUtils';
 import styles from './App.module.css';
 
@@ -13,7 +14,55 @@ export default function App() {
   const previewImages = store.getPreviewNames();
   const [viewMode, setViewMode] = useState('grid');
   const [thumbSize, setThumbSize] = useState(180);
+  const [splitView, setSplitView] = useState(false);
+  // focusedPreviewId: the image currently shown in the preview panel.
+  // Updated both by clicking a card in the grid AND by filmstrip/arrow navigation.
+  const [focusedPreviewId, setFocusedPreviewId] = useState(null);
 
+  // Split pane sizing (percentage of total width for the left/grid pane)
+  const [splitPos, setSplitPos] = useState(40);
+  const splitBodyRef = useRef(null);
+
+  // ── Split pane drag ─────────────────────────────────────────────────────
+  const handleSplitterMouseDown = useCallback((e) => {
+    e.preventDefault();
+    const body = splitBodyRef.current;
+    if (!body) return;
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = (mv) => {
+      const rect = body.getBoundingClientRect();
+      const pct = ((mv.clientX - rect.left) / rect.width) * 100;
+      setSplitPos(Math.max(20, Math.min(75, pct)));
+    };
+
+    const onUp = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
+
+  // ── Selection + focus ───────────────────────────────────────────────────
+  const handleToggleSelect = useCallback((id, shiftKey) => {
+    store.toggleSelect(id, shiftKey);
+    setFocusedPreviewId(id);
+  }, [store]);
+
+  // Called by PreviewPanel when the user navigates via filmstrip or arrows
+  const handleFocusChange = useCallback((id) => {
+    setFocusedPreviewId(id);
+  }, []);
+
+  const selectedImages = previewImages.filter(img => store.selectedIds.has(img.id));
+
+  // ── Download ─────────────────────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
     if (!store.prefix.trim() || store.images.length === 0) return;
 
@@ -34,6 +83,18 @@ export default function App() {
   }, [store]);
 
   const hasImages = store.images.length > 0;
+
+  const imageGrid = (
+    <ImageGrid
+      images={previewImages}
+      selectedIds={store.selectedIds}
+      onReorder={store.reorderImages}
+      onToggleSelect={handleToggleSelect}
+      onRemove={store.removeImages}
+      viewMode={viewMode}
+      thumbSize={thumbSize}
+    />
+  );
 
   return (
     <div className={styles.app}>
@@ -71,16 +132,29 @@ export default function App() {
             onViewModeChange={setViewMode}
             thumbSize={thumbSize}
             onThumbSizeChange={setThumbSize}
+            splitView={splitView}
+            onSplitViewChange={setSplitView}
           />
-          <ImageGrid
-            images={previewImages}
-            selectedIds={store.selectedIds}
-            onReorder={store.reorderImages}
-            onToggleSelect={store.toggleSelect}
-            onRemove={store.removeImages}
-            viewMode={viewMode}
-            thumbSize={thumbSize}
-          />
+          {splitView ? (
+            <div className={styles.splitBody} ref={splitBodyRef}>
+              <div className={styles.gridPane} style={{ flex: `0 0 ${splitPos}%` }}>
+                {imageGrid}
+              </div>
+              <div
+                className={styles.splitter}
+                onMouseDown={handleSplitterMouseDown}
+              />
+              <div className={styles.previewPane}>
+                <PreviewPanel
+                  selectedImages={selectedImages}
+                  focusedId={focusedPreviewId}
+                  onFocusChange={handleFocusChange}
+                />
+              </div>
+            </div>
+          ) : (
+            imageGrid
+          )}
         </div>
       )}
 

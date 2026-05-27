@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import styles from './ImageCard.module.css';
 import { formatFileSize } from '../utils/imageUtils';
 
-function ImageCard({ image, index, newName, isSelected, onToggleSelect, onRemove, viewMode, thumbSize, isGhostDrag }) {
+function ImageCard({ image, index, newName, isSelected, onToggleSelect, onRemove, viewMode, isGhostDrag }) {
   const {
     attributes,
     listeners,

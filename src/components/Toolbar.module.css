@@ -145,6 +145,32 @@
   opacity: 0.3;
 }
 
+/* Split view button */
+.splitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 30px;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  transition: all var(--transition-fast);
+}
+
+.splitBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.splitBtn.splitActive {
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-color: var(--border-accent);
+}
+
 /* View controls */
 .viewControls {
   display: flex;
